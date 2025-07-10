@@ -3,17 +3,27 @@
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { endpoints, paths } from '@/shared/paths'
+import { useForm } from '@tanstack/react-form'
 import Link from 'next/link'
-import React, { FormEvent, useCallback, useState } from 'react'
+import React, { FormEvent, useCallback } from 'react'
+
+import z from 'zod'
 
 const Page = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-
-  // TODO: is useCallback even necessary in React 19?
-  const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
+  const form = useForm({
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+    validators: {
+      // Pass a schema or function to validate
+      onSubmit: z.object({
+        username: z.string().min(1, 'Username is required!'),
+        password: z.string().min(1, 'Password is required!'),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      const { username, password } = value
 
       try {
         const response = await fetch(
@@ -30,7 +40,15 @@ const Page = () => {
         console.log('error = ', JSON.stringify(error))
       }
     },
-    [password, username]
+  })
+
+  // TODO: is useCallback even necessary in React 19?
+  const handleSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      form.handleSubmit()
+    },
+    [form]
   )
 
   return (
@@ -45,22 +63,60 @@ const Page = () => {
       <h1 className='text-2xl font-bold mb-8'>Login</h1>
 
       <label className='font-medium'>Username</label>
-      <Input
-        type='text'
-        placeholder='username'
-        value={username}
-        onChange={(event) => setUsername(event.target.value)}
-      />
+      <form.Field name='username'>
+        {(field) => (
+          <>
+            <Input
+              type='text'
+              placeholder='username'
+              id={field.name}
+              name={field.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+
+            {!field.state.meta.isValid && (
+              <em role='alert' className='text-red-500'>
+                {field.state.meta.errors[0]?.message}
+              </em>
+            )}
+          </>
+        )}
+      </form.Field>
 
       <label className='font-medium'>Password</label>
-      <Input
-        type='password'
-        placeholder='password'
-        value={password}
-        onChange={(event) => setPassword(event.target.value)}
-      />
+      <form.Field name='password'>
+        {(field) => (
+          <>
+            <Input
+              type='password'
+              placeholder='password'
+              id={field.name}
+              name={field.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
 
-      <Button className='mt-4'>submit</Button>
+            {!field.state.meta.isValid && (
+              <em role='alert' className='text-red-500'>
+                {field.state.meta.errors[0]?.message}
+              </em>
+            )}
+          </>
+        )}
+      </form.Field>
+
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}
+      >
+        {([canSubmit, isSubmitting]) => (
+          <Button className='mt-4' disabled={!canSubmit}>
+            {isSubmitting ? '...' : 'Submit'}
+          </Button>
+        )}
+      </form.Subscribe>
     </form>
   )
 }
