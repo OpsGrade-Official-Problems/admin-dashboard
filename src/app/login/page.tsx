@@ -5,11 +5,15 @@ import { Input } from '@/shared/components/ui/input'
 import { endpoints, paths } from '@/shared/paths'
 import { useForm } from '@tanstack/react-form'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { FormEvent, useCallback } from 'react'
+import { toast } from 'sonner'
 
 import z from 'zod'
 
 const Page = () => {
+  const router = useRouter()
+
   const form = useForm({
     defaultValues: {
       username: '',
@@ -33,11 +37,22 @@ const Page = () => {
             body: JSON.stringify({ username, password }),
           }
         )
-        const body = await response.json()
 
-        console.log('response = ', JSON.stringify(body))
+        if (!response.ok) {
+          throw response
+        }
+
+        await response.json()
+        toast(`Login Successful!`)
+
+        router.replace(paths.home)
       } catch (error) {
         console.log('error = ', JSON.stringify(error))
+
+        if (error instanceof Response) {
+          const body = await error.json()
+          toast(`error: ${body.message}`)
+        }
       }
     },
   })
