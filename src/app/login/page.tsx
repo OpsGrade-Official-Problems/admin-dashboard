@@ -2,6 +2,7 @@
 
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
+import { cn } from '@/shared/lib/utils'
 import { endpoints, paths } from '@/shared/paths'
 import { useForm } from '@tanstack/react-form'
 import Link from 'next/link'
@@ -77,18 +78,23 @@ const Page = () => {
 
       <h1 className='text-2xl font-bold mb-8'>Login</h1>
 
-      <label className='font-medium'>Username</label>
       <form.Field name='username'>
         {(field) => (
           <>
+            <label htmlFor={field.name} className='font-medium'>
+              Username
+            </label>
             <Input
               type='text'
               placeholder='username'
+              autoComplete='off'
+              autoFocus
               id={field.name}
               name={field.name}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
+              className={cn(!field.state.meta.isValid && 'border-red-500')}
             />
 
             {!field.state.meta.isValid && (
@@ -100,10 +106,12 @@ const Page = () => {
         )}
       </form.Field>
 
-      <label className='font-medium'>Password</label>
       <form.Field name='password'>
         {(field) => (
           <>
+            <label htmlFor={field.name} className='font-medium'>
+              Password
+            </label>
             <Input
               type='password'
               placeholder='password'
@@ -112,6 +120,7 @@ const Page = () => {
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
+              className={cn(!field.state.meta.isValid && 'border-red-500')}
             />
 
             {!field.state.meta.isValid && (
@@ -127,7 +136,7 @@ const Page = () => {
         selector={(state) => [state.canSubmit, state.isSubmitting]}
       >
         {([canSubmit, isSubmitting]) => (
-          <Button className='mt-4' disabled={!canSubmit}>
+          <Button disabled={!canSubmit} className='mt-4 hover:cursor-pointer'>
             {isSubmitting ? '...' : 'Submit'}
           </Button>
         )}
