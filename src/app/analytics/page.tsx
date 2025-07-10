@@ -1,19 +1,18 @@
-import { paths } from '@/shared/paths'
+import { endpoints, paths } from '@/shared/paths'
 import Link from 'next/link'
 import React from 'react'
 
-const mockUsers = [
-  { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
-  { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'User' },
-  {
-    id: 3,
-    name: 'Charlie Brown',
-    email: 'charlie@example.com',
-    role: 'Moderator',
-  },
-]
+type User = {
+  id: string
+  name: string
+  email: string
+  role: string
+}
 
-const Page = () => {
+const Page = async () => {
+  const res = await fetch(`http://localhost:3000${endpoints.users}`)
+  const { users } = (await res.json()) as { users: User[] }
+
   return (
     <div className='p-6'>
       <Link href={paths.home} className='text-blue-600 hover:underline'>
@@ -32,9 +31,9 @@ const Page = () => {
               <th className='px-4 py-2 border-b text-left'>Role</th>
             </tr>
           </thead>
-          
+
           <tbody>
-            {mockUsers.map((user) => (
+            {users.map((user) => (
               <tr key={user.id} className='hover:bg-gray-50'>
                 <td className='px-4 py-2 border-b'>{user.id}</td>
                 <td className='px-4 py-2 border-b'>{user.name}</td>
